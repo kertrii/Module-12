@@ -1,66 +1,96 @@
 package org.example;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Queue;
 
 public class FizzBuzz {
+    private int n;
+    private Queue queue;
+    private int currenNumber = 1;
 
-    private final int n;
-    private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
-    private final AtomicInteger current = new AtomicInteger(1);
-
-    public FizzBuzz(int n) {
+    public FizzBuzz(int n, Queue queue) {
         this.n = n;
+        this.queue = queue;
     }
 
-    public void fizz() throws InterruptedException {
-        while (true) {
-            int num = current.get();
-            if (num > n) return;
-            if (num % 3 == 0 && num % 5 != 0) {
-                queue.put("fizz");
-                current.incrementAndGet();
+    public void fizz () {
+        synchronized (this) {
+            while (currenNumber <= n) {
+                if (currenNumber % 3 == 0 && currenNumber % 5 != 0) {
+                    queue.add("Fizz");
+                    currenNumber++;
+                    notifyAll();
+                } else {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
 
-    public void buzz() throws InterruptedException {
-        while (true) {
-            int num = current.get();
-            if (num > n) return;
-            if (num % 5 == 0 && num % 3 != 0) {
-                queue.put("buzz");
-                current.incrementAndGet();
+    public void number () {
+        synchronized (this) {
+            while (currenNumber <= n) {
+                if (currenNumber % 3 != 0 && currenNumber % 5 != 0) {
+                    queue.add(currenNumber);
+                    currenNumber++;
+                    notifyAll();
+                } else {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
 
-    public void fizzbuzz() throws InterruptedException {
-        while (true) {
-            int num = current.get();
-            if (num > n) return;
-            if (num % 3 == 0 && num % 5 == 0) {
-                queue.put("fizzbuzz");
-                current.incrementAndGet();
+    public void buzz () {
+        synchronized (this) {
+            while (currenNumber <= n) {
+                if (currenNumber % 3 != 0 && currenNumber % 5 == 0) {
+                    queue.add("Buzz");
+                    currenNumber++;
+                    notifyAll();
+                } else {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
 
-    public void number() throws InterruptedException {
-        while (true) {
-            int num = current.get();
-            if (num > n) return;
-            if (num % 3 != 0 && num % 5 != 0) {
-                queue.put(Integer.toString(num));
-                current.incrementAndGet();
+    public void fizzBuzz () {
+        synchronized (this) {
+            while (currenNumber <= n) {
+                if (currenNumber % 3 == 0 && currenNumber % 5 == 0) {
+                    queue.add("FizzBuzz");
+                    currenNumber++;
+                    notifyAll();
+                } else {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
 
-    public void print() throws InterruptedException {
-        for (int i = 1; i <= n; i++) {
-            System.out.print(queue.take() + (i < n ? ", " : "\n"));
+    public void outputResults() {
+        while (currenNumber <= n) {
+            while (!queue.isEmpty()) {
+                Object element = queue.poll();
+                System.out.println(element);
+            }
+
         }
     }
 }

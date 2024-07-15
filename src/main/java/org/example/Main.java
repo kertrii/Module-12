@@ -1,52 +1,41 @@
 package org.example;
 
+import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
-        int n = 15;
-        FizzBuzz fizzBuzz = new FizzBuzz(n);
+    public static void main(String[] args) {
 
-        Thread threadA = new Thread(() -> {
-            try {
-                fizzBuzz.fizz();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Введiть n ");
+        int n = scanner.nextInt();
 
-        Thread threadB = new Thread(() -> {
-            try {
-                fizzBuzz.buzz();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+        FizzBuzz fizzBuzz = new FizzBuzz(n, queue);
 
-        Thread threadC = new Thread(() -> {
-            try {
-                fizzBuzz.fizzbuzz();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        Thread fizzThread = new Thread(() -> fizzBuzz.fizz());
+        Thread outputThread = new Thread(() -> fizzBuzz.outputResults());
+        Thread number = new Thread(() -> fizzBuzz.number());
+        Thread buzz = new Thread(() -> fizzBuzz.buzz());
+        Thread fizzbuzz = new Thread(() -> fizzBuzz.fizzBuzz());
 
-        Thread threadD = new Thread(() -> {
-            try {
-                fizzBuzz.number();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        fizzThread.start();
+        outputThread.start();
+        number.start();
+        buzz.start();
+        fizzbuzz.start();
 
-        threadA.start();
-        threadB.start();
-        threadC.start();
-        threadD.start();
+        while (!queue.isEmpty()) {
+            String element = queue.poll();
+            System.out.println(element);
+        }
 
-        fizzBuzz.print();
+        try {
+            outputThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-        threadA.join();
-        threadB.join();
-        threadC.join();
-        threadD.join();
     }
 }
